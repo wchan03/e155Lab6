@@ -49,7 +49,7 @@ char spiSendReceive(char send){
     volatile char* address = (volatile char*)&SPI1->DR; // send data when it is written to a data register 
     *address = send; 
 
-    while(!(SPI_SR_RXNE & SPI1->SR)){}; //wait for data to be recieved 
+    //while(!(SPI_SR_RXNE & SPI1->SR)){}; //wait for data to be recieved 
 
     return *address; //return the receieve data
 }

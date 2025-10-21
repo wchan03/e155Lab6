@@ -105,6 +105,14 @@ int main(void) {
   initSPI(200000, 0, 1);
 
   while(0){ //TODO: test SPI here
+    
+    //delay_millis(TIM15, 150);
+    digitalWrite(CS, PIO_HIGH);
+    //delay_millis(TIM15, 150);
+    spiSendReceive(0x80);
+    digitalWrite(CS, PIO_LOW);
+    delay_millis(TIM15, 150);
+
   }
 
 
@@ -128,7 +136,7 @@ int main(void) {
     
   
   
-    // TODO: Add SPI code here for reading temperature
+    //SPI Temp Readings
 
     //data to write
     int msb;
@@ -158,10 +166,10 @@ int main(void) {
     }
     
     //configure sensor 
+    digitalWrite(CS, PIO_LOW);
     digitalWrite(CS, PIO_HIGH); 
-    spiSendReceive(0x80); //TODO: send recieve isnt workinggg
-    
-    spiSendReceive(rs);
+    spiSendReceive(0x80); //write to config. address
+    spiSendReceive(rs); //send config
 
     //end message
     digitalWrite(CS, PIO_LOW);
@@ -169,7 +177,7 @@ int main(void) {
     
     //read data
     spiSendReceive(0x20); //read the MSB register
-    msb = spiSendReceive(0x00);
+    msb = spiSendReceive(0x00); //TODO: not currently getting any data here
 
     digitalWrite(CS, PIO_LOW);
     digitalWrite(CS, PIO_HIGH);
@@ -197,11 +205,17 @@ int main(void) {
       sprintf(ledStatusStr,"LED is off!");
 
     //Update with temp read
+    //tempData= 100.0;
     char temp[20];
-    //char cels[20];
-    //sprintf(temp, "%f", tempData);
-    sprintf(temp, "%i", rs);
-    //sprintf(cels, "degrees Celcius");
+    sprintf(temp, "%f", tempData);
+    
+
+    //testing variables
+    char msb_char[20];
+    char lsb_char[20];
+    sprintf(msb_char, "%i", msb);
+    sprintf(lsb_char, "%c", lsb);
+
 
     // finally, transmit the webpage over UART
     sendString(USART, webpageStart); // webpage header code
@@ -215,11 +229,23 @@ int main(void) {
     sendString(USART, "</p>");
 
     sendString(USART, tempRes); //for updating temp resolution
-    sendString(USART, "<h2>Temperature Resolution:</h2>");
+    sendString(USART, "<h2>Temperature:</h2>");
     sendString(USART, "<p>");
     sendString(USART, temp);
-    //sendString()
+    sendString(USART, "degrees");
     sendString(USART, "</p>");
+  
+    //checking stuff
+    sendString(USART, "<h2>Raw Recieved Data:</h2>");
+    sendString(USART, "<p>");
+    sendString(USART, "MSB:");
+    sendString(USART, msb_char);
+    sendString(USART, "</p>");
+    sendString(USART, "<p>");
+     sendString(USART, "LSB:");
+    sendString(USART, lsb_char);;
+    sendString(USART, "</p>");
+
   
     sendString(USART, webpageEnd);
   }
