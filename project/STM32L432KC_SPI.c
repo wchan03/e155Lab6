@@ -23,9 +23,10 @@ void initSPI(int br, int cpol, int cpha){
 
     //set alternate function 5
     GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL5, 0b0101); //SCK
-    //GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL1, 0b0101); //switch SCK pin bc it wasn't working before
+    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL1, 0b0101); //switch SCK pin bc it wasn't working before
     GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL6, 0b0101); //CIPO
     GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL7, 0b0101); //COPI
+    GPIOA->AFR[1] |= _VAL2FLD(GPIO_AFRH_AFSEL12, 0b0101); //swicth COPI pin bc it wasnt working
 
     //reset SPI
     SPI1->CR1 |= _VAL2FLD(SPI_CR1_SPE, 0b0);
@@ -48,6 +49,7 @@ void initSPI(int br, int cpol, int cpha){
 
 }
 
+
 char spiSendReceive(char send){
     while(!(SPI1->SR & SPI_SR_TXE)){}; // wait for empty transmit buffer
     
@@ -56,8 +58,9 @@ char spiSendReceive(char send){
 
     while(!(SPI_SR_RXNE & SPI1->SR)){}; //wait for data to be recieved 
 
-    return (SPI1->DR); //return the receieve data
+    return (volatile char)(SPI1->DR); //return the receieve data
 }
+
 
 float decodeData(int msb, char lsb){
     //get main data 

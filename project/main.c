@@ -95,23 +95,17 @@ int main(void) {
 
   pinMode(PB3, GPIO_OUTPUT);
   
-  RCC->APB2ENR |= (RCC_APB2ENR_TIM15EN);
-  initTIM(TIM15);
-  
   USART_TypeDef * USART = initUSART(USART1_ID, 125000);
 
   // TODO: Add SPI initialization code. change baud rate?
   //initialize SPI w/ 200kHz br
   initSPI(200000, 0, 1);
 
-  while(0){ //TODO: test SPI here
-    
-    //delay_millis(TIM15, 150);
+  while(0){ //example data send
     digitalWrite(CS, PIO_HIGH);
-    //delay_millis(TIM15, 150);
     spiSendReceive(0x80);
+    spiSendReceive(0b11100010);
     digitalWrite(CS, PIO_LOW);
-    delay_millis(TIM15, 150);
 
   }
 
@@ -127,21 +121,21 @@ int main(void) {
     int charIndex = 0;
   
     // Keep going until you get end of line character
-    
+    if(0){ //TODO: my issue is here somewhere
     while(inString(request, "\n") == -1) {
       // Wait for a complete request to be transmitted before processing
       while(!(USART->ISR & USART_ISR_RXNE));
       request[charIndex++] = readChar(USART);
     }
-    
-  
+    }
   
     //SPI Temp Readings
 
     //data to write
-    int msb;
-    char lsb, rs; //rs = resolution
-    res = updateTempRes(request);
+    int msb = 1;
+    char lsb = 1, rs = 0b1100000; //rs = resolution
+    //res = updateTempRes(request);
+    res = 8;
    
     //set resolution
     switch(res){
@@ -164,89 +158,105 @@ int main(void) {
         rs = 0b1100000;
         break;
     }
+  
     
     //configure sensor 
     digitalWrite(CS, PIO_LOW);
     digitalWrite(CS, PIO_HIGH); 
     spiSendReceive(0x80); //write to config. address
     spiSendReceive(rs); //send config
-
+    
     //end message
     digitalWrite(CS, PIO_LOW);
-    digitalWrite(CS, PIO_HIGH); 
+    
     
     //read data
-    spiSendReceive(0x20); //read the MSB register
-    msb = spiSendReceive(0x00); //TODO: not currently getting any data here
-
-    digitalWrite(CS, PIO_LOW);
     digitalWrite(CS, PIO_HIGH);
-
+    spiSendReceive(0x02); //read the MSB register
+    msb = spiSendReceive(0x00); 
+    digitalWrite(CS, PIO_LOW);
+    
+    digitalWrite(CS, PIO_HIGH);
     spiSendReceive(0x01); //read the LSB register
     lsb = spiSendReceive(0x00);
-
     digitalWrite(CS, PIO_LOW);
 
-    delay_millis(TIM15, 150);
-
+    
     //decode data
     float tempData = decodeData(msb, lsb);
-    //*/
-
-    // Update string with current LED state
-    delay_millis(TIM15, 150);
-  
-    int led_status = updateLEDStatus(request);
-
+    
+    
+    // Update string with current LED state  
+    char led = 0;
     char ledStatusStr[20];
+    if(led){
+    int led_status = updateLEDStatus(request);
+    
+    //int led_status = 1;
     if (led_status == 1)
       sprintf(ledStatusStr,"LED is on!");
     else if (led_status == 0)
       sprintf(ledStatusStr,"LED is off!");
-
+    }
+  
     //Update with temp read
-    //tempData= 100.0;
+    //float 
+    tempData= 100.0;
     char temp[20];
     sprintf(temp, "%f", tempData);
     
-
-    //testing variables
+    
+    char testing_perm = 1;
     char msb_char[20];
     char lsb_char[20];
+    char res_char[20];
+    char rs_char[20];
+    if(testing_perm){
+    //testing variables
     sprintf(msb_char, "%i", msb);
-    sprintf(lsb_char, "%c", lsb);
-
+    sprintf(lsb_char, "%b", lsb);
+    sprintf(res_char, "%i", res);
+    sprintf(rs_char, "%b", rs);
+    }
+    
 
     // finally, transmit the webpage over UART
     sendString(USART, webpageStart); // webpage header code
+
+    if(led){
     sendString(USART, ledStr); // button for controlling LED
-
     sendString(USART, "<h2>LED Status</h2>");
-
-
     sendString(USART, "<p>");
     sendString(USART, ledStatusStr);
     sendString(USART, "</p>");
+    }
 
     sendString(USART, tempRes); //for updating temp resolution
     sendString(USART, "<h2>Temperature:</h2>");
     sendString(USART, "<p>");
     sendString(USART, temp);
-    sendString(USART, "degrees");
+    sendString(USART, " degrees");
     sendString(USART, "</p>");
-  
-    //checking stuff
+    
+    if(testing_perm){ //checking intermediates
     sendString(USART, "<h2>Raw Recieved Data:</h2>");
     sendString(USART, "<p>");
     sendString(USART, "MSB:");
     sendString(USART, msb_char);
     sendString(USART, "</p>");
     sendString(USART, "<p>");
-     sendString(USART, "LSB:");
+    sendString(USART, "LSB:");
     sendString(USART, lsb_char);;
     sendString(USART, "</p>");
-
-  
+    sendString(USART, "<p>");
+    sendString(USART, "Resolution:");
+    sendString(USART, res_char);
+    sendString(USART, "</p>");
+    }
+    
+    
+    sendString(USART, "<p>/p>");
     sendString(USART, webpageEnd);
+    
   }
 }
