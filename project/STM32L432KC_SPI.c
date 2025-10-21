@@ -10,7 +10,6 @@ void initSPI(int br, int cpol, int cpha){
     //turn on SPI clock
     RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; 
 
-
     // configure GPIO pins
     gpioEnable(SCK);
     gpioEnable(CIPO);
@@ -23,9 +22,10 @@ void initSPI(int br, int cpol, int cpha){
     pinMode(CS, GPIO_OUTPUT);
 
     //set alternate function 5
-    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL5, 0b0101); 
-    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL6, 0b0101);
-    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL7, 0b0101);
+    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL5, 0b0101); //SCK
+    //GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL1, 0b0101); //switch SCK pin bc it wasn't working before
+    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL6, 0b0101); //CIPO
+    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL7, 0b0101); //COPI
 
     //reset SPI
     SPI1->CR1 |= _VAL2FLD(SPI_CR1_SPE, 0b0);
@@ -61,7 +61,7 @@ char spiSendReceive(char send){
 
 float decodeData(int msb, char lsb){
     //get main data 
-    float temp = msb & 0b01111111; //turn it into a float
+    float temp = msb & 0b01111111; //turn it into a float & remove sign bit
     //get the sign bit 
     int sign = msb & (1 << 7); //8th bit
     if(!sign) { //when positive, add values

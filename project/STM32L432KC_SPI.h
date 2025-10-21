@@ -11,7 +11,8 @@
 #include <stm32l432xx.h>
 #include "STM32L432KC_GPIO.h"
 
-#define SCK PA5 
+#define SCK PA5
+//#define SCK PA1 
 #define CIPO PA6
 #define COPI PA7
 #define CS PA4
