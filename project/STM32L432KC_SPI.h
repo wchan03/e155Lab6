@@ -11,10 +11,10 @@
 #include <stm32l432xx.h>
 #include "STM32L432KC_GPIO.h"
 
-#define SCK PA5 //TODO: reassign these pins?
+#define SCK PA5 
 #define CIPO PA6
 #define COPI PA7
-#define CS 4
+#define CS PA4
 
 #define PORT GPIOA; 
 

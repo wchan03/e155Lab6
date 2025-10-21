@@ -20,13 +20,14 @@ Date: 10/17/2025
 /////////////////////////////////////////////////////////////////
 
 //Defining the web page in two chunks: everything before the current time, and everything after the current time
-char* webpageStart = "<!DOCTYPE html><html><head><title>E155 Web Server Demo Webpage</title>\
+char* webpageStart = "<!DOCTYPE html><html><head><title>Lab 6:Choose You Settings</title>\
 	<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\
 	</head>\
-	<body><h1>E155 Web Server Demo Webpage</h1>";
+	<body><h1>Lab 6:Choose You Settings</h1>";
 char* ledStr = "<p>LED Control:</p><form action=\"ledon\"><input type=\"submit\" value=\"Turn the LED on!\"></form>\
 	<form action=\"ledoff\"><input type=\"submit\" value=\"Turn the LED off!\"></form>";
-char* tempRes = "<p>Temperature Resolution:</p><form action =\"8bit\"><input type=\"submit\" value=\"1C Resolution (8 bits)\"></form>\
+char* tempRes = "<p>Temperature Resolution:</p>\
+        <form action =\"8bit\"><input type=\"submit\" value=\"1C Resolution (8 bits)\"></form>\
         <form action =\"9bit\"><input type=\"submit\" value=\"0.5C Resolution (9 bits)\"></form>\
         <form action =\"10bit\"><input type=\"submit\" value=\"0.25C Resolution (10 bits)\"></form>\
         <form action =\"11bit\"><input type=\"submit\" value=\"0.125 Resolution (11 bits)\"></form>\
@@ -75,6 +76,7 @@ int updateTempRes(char request[]){
   else {
     res = 8;
   }
+  return res;
 }
 
 //TODO: function to send characters to laptop?
@@ -100,7 +102,11 @@ int main(void) {
 
   // TODO: Add SPI initialization code. change baud rate?
   //initialize SPI w/ 200kHz br
-  initSPI(200000, 0, 0);
+  initSPI(200000, 0, 1);
+
+  while(0){ //TODO: test SPI here
+  }
+
 
   while(1) {
     /* Wait for ESP8266 to send a request.
@@ -113,22 +119,22 @@ int main(void) {
     int charIndex = 0;
   
     // Keep going until you get end of line character
+    
     while(inString(request, "\n") == -1) {
       // Wait for a complete request to be transmitted before processing
       while(!(USART->ISR & USART_ISR_RXNE));
       request[charIndex++] = readChar(USART);
     }
-
+    
+  
+  
     // TODO: Add SPI code here for reading temperature
-
-    //give GPIO access to SPI
-    //get data from core to SPI
 
     //data to write
     int msb;
     char lsb, rs; //rs = resolution
     res = updateTempRes(request);
-
+   
     //set resolution
     switch(res){
       case 8:
@@ -150,10 +156,11 @@ int main(void) {
         rs = 0b1100000;
         break;
     }
-
+    
     //configure sensor 
     digitalWrite(CS, PIO_HIGH); 
-    spiSendReceive(0x80); 
+    spiSendReceive(0x80); //TODO: send recieve isnt workinggg
+    
     spiSendReceive(rs);
 
     //end message
@@ -170,10 +177,16 @@ int main(void) {
     spiSendReceive(0x01); //read the LSB register
     lsb = spiSendReceive(0x00);
 
+    digitalWrite(CS, PIO_LOW);
+
+    delay_millis(TIM15, 150);
+
     //decode data
     float tempData = decodeData(msb, lsb);
+    //*/
 
     // Update string with current LED state
+    delay_millis(TIM15, 150);
   
     int led_status = updateLEDStatus(request);
 
@@ -186,7 +199,8 @@ int main(void) {
     //Update with temp read
     char temp[20];
     //char cels[20];
-    sprintf(temp, "%f", tempData);
+    //sprintf(temp, "%f", tempData);
+    sprintf(temp, "%i", rs);
     //sprintf(cels, "degrees Celcius");
 
     // finally, transmit the webpage over UART
@@ -201,13 +215,11 @@ int main(void) {
     sendString(USART, "</p>");
 
     sendString(USART, tempRes); //for updating temp resolution
-    sendString(USART, "<h2>Temperature</h2>");
+    sendString(USART, "<h2>Temperature Resolution:</h2>");
     sendString(USART, "<p>");
     sendString(USART, temp);
     //sendString()
     sendString(USART, "</p>");
-
-
   
     sendString(USART, webpageEnd);
   }
