@@ -21,22 +21,14 @@ void initSPI(int br, int cpol, int cpha){
     pinMode(COPI, GPIO_ALT);
     pinMode(CS, GPIO_OUTPUT);
 
-    //TODO: delete this later
-    //pinMode(PA11, GPIO_ALT);
-    //GPIOA->AFR[1] |= _VAL2FLD(GPIO_AFRH_AFSEL11, 0b0101); //swicth COPI pin bc it wasnt working
-
     //set alternate function 5
-    //GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL5, 0b0101); //SCK
-    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL1, 0b0101); //switch SCK pin bc it wasn't working before
-    //GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL6, 0b0101); //CIPO
-    //GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL7, 0b0101); //COPI
-    GPIOA->AFR[1] |= _VAL2FLD(GPIO_AFRH_AFSEL12, 0b0101); //switch COPI pin bc it wasnt working
-    GPIOB->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL4, 0b0101); //switch CIPO pin
+    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL1, 0b0101); //SCK
+    GPIOA->AFR[1] |= _VAL2FLD(GPIO_AFRH_AFSEL12, 0b0101); //COPI
+    GPIOB->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL4, 0b0101); //CIPO
 
     //reset SPI
     SPI1->CR1 |= _VAL2FLD(SPI_CR1_SPE, 0b0);
 
-    //SPI1->CR1 |= _VAL2FLD(SPI_CR1_BR, br);//set baud rate 
     SPI1->CR1 |= _VAL2FLD(SPI_CR1_BR, 0b110);//set baud rate 
     SPI1->CR1 |= _VAL2FLD(SPI_CR1_CPOL, cpol); //set clock polarity
     SPI1->CR1 |= _VAL2FLD(SPI_CR1_CPHA, cpha); //set clock phase

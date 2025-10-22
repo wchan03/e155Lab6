@@ -58,8 +58,9 @@ int updateLEDStatus(char request[]) {
   return led_status;
 }
 
+int res = 8;
 int updateTempRes(char request[]) {
-  int res = 8;
+  
   if (inString(request, "8bit") == 1) {
     res = 8;
   } else if (inString(request, "9bit") == 1) {
@@ -70,9 +71,7 @@ int updateTempRes(char request[]) {
     res = 11;
   } else if (inString(request, "12bit") == 1) {
     res = 12;
-  } else {
-    res = 8;
-  }
+  } 
   return res;
 }
 
@@ -144,8 +143,6 @@ int main(void) {
         request[charIndex++] = readChar(USART);
       }
     }
-
- 
     
     // SPI Temp Readings
     
@@ -154,7 +151,6 @@ int main(void) {
     unsigned char lsb;    
     uint8_t rs;// rs = resolution
     int res = updateTempRes(request);
-    //int res = 8;
 
     // set resolution
     switch (res) {
@@ -174,7 +170,7 @@ int main(void) {
       rs = 0b11101110;
       break;
     default:
-      rs = 0b11100000;
+      rs = 0b11101110;
       break;
     }
 
@@ -196,23 +192,20 @@ int main(void) {
     lsb = spiSendReceive(0x00);
     digitalWrite(CS, PIO_LOW);
 
-    printf("\nmsb: %d", msb);
-    printf("\nlsb: %d", lsb);
+    //printf("\nmsb: %d", msb);
+    //printf("\nlsb: %d", lsb);
     
     // decode data
     float tempData = decodeData(msb, lsb);
-    //float tempData = (msb + (lsb/256.0));
   
     // Update string with current LED state
-    char led = 1;
     char ledStatusStr[20];
-    if (led) {
       int led_status = updateLEDStatus(request);
       if (led_status == 1)
         sprintf(ledStatusStr, "LED is on!");
       else if (led_status == 0)
         sprintf(ledStatusStr, "LED is off!");
-    }
+    
 
     // Update with temp read
     char temp[20];
@@ -228,19 +221,18 @@ int main(void) {
       sprintf(msb_char, "%d", msb);
       sprintf(lsb_char, "%d", lsb);
       sprintf(res_char, "%i", res);
-      sprintf(rs_char, "%b", rs);
+      sprintf(rs_char, "%i", rs);
     }
 
     // finally, transmit the webpage over UART
-    //sendString(USART, webpageStart);    // webpage header code
 
-    if (led) {
+
       sendString(USART, ledStr);        // button for controlling LED
       sendString(USART, "<h2>LED Status</h2>");
       sendString(USART, "<p>");
       sendString(USART, ledStatusStr);
       sendString(USART, "</p>");
-    }
+
 
     sendString(USART, tempRes);    // for updating temp resolution
     sendString(USART, "<h2>Temperature:</h2>");
@@ -258,15 +250,14 @@ int main(void) {
       sendString(USART, "<p>");
       sendString(USART, "LSB:");
       sendString(USART, lsb_char);
-      ;
       sendString(USART, "</p>");
       sendString(USART, "<p>");
       sendString(USART, "Resolution:");
-      sendString(USART, rs_char);
+      sendString(USART, res_char);
       sendString(USART, "</p>");
     }
 
-    sendString(USART, "<p>/p>");
+    sendString(USART, "<p></p>");
     sendString(USART, webpageEnd);
   }
 }
