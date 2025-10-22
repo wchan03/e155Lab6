@@ -21,12 +21,17 @@ void initSPI(int br, int cpol, int cpha){
     pinMode(COPI, GPIO_ALT);
     pinMode(CS, GPIO_OUTPUT);
 
+    //TODO: delete this later
+    //pinMode(PA11, GPIO_ALT);
+    //GPIOA->AFR[1] |= _VAL2FLD(GPIO_AFRH_AFSEL11, 0b0101); //swicth COPI pin bc it wasnt working
+
     //set alternate function 5
-    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL5, 0b0101); //SCK
+    //GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL5, 0b0101); //SCK
     GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL1, 0b0101); //switch SCK pin bc it wasn't working before
-    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL6, 0b0101); //CIPO
-    GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL7, 0b0101); //COPI
-    GPIOA->AFR[1] |= _VAL2FLD(GPIO_AFRH_AFSEL12, 0b0101); //swicth COPI pin bc it wasnt working
+    //GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL6, 0b0101); //CIPO
+    //GPIOA->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL7, 0b0101); //COPI
+    GPIOA->AFR[1] |= _VAL2FLD(GPIO_AFRH_AFSEL12, 0b0101); //switch COPI pin bc it wasnt working
+    GPIOB->AFR[0] |= _VAL2FLD(GPIO_AFRL_AFSEL4, 0b0101); //switch CIPO pin
 
     //reset SPI
     SPI1->CR1 |= _VAL2FLD(SPI_CR1_SPE, 0b0);
@@ -40,7 +45,7 @@ void initSPI(int br, int cpol, int cpha){
     //SPI1->CR1 |= _VAL2FLD(SPI_CR1_SSI, 0b1);//enable peripheral control
     SPI1->CR1 |= _VAL2FLD(SPI_CR1_MSTR, 0b1);//enable controller 
 
-    SPI1->CR2 |= _VAL2FLD(SPI_CR2_DS, 0b0111);//configure data size tp 8 bit
+    SPI1->CR2 |= _VAL2FLD(SPI_CR2_DS, 0b0111);//configure data size to 8 bit
     SPI1->CR2 |= _VAL2FLD(SPI_CR2_SSOE, 1); //SS output is enabled
     SPI1->CR2 |= _VAL2FLD(SPI_CR2_FRXTH, 1); //set FIFO to 8bits
     
@@ -60,7 +65,6 @@ char spiSendReceive(char send){
 
     return (volatile char)(SPI1->DR); //return the receieve data
 }
-
 
 float decodeData(int msb, char lsb){
     //get main data 

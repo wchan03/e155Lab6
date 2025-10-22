@@ -11,11 +11,9 @@
 #include <stm32l432xx.h>
 #include "STM32L432KC_GPIO.h"
 
-//#define SCK PA5
 #define SCK PA1 
-//#define CIPO PA6
-#define CIPO PA12
-#define COPI PA7
+#define CIPO PB4
+#define COPI PA12
 #define CS PA4
 
 #define PORT GPIOA; 
@@ -36,6 +34,7 @@ void initSPI(int br, int cpol, int cpha);
  *    -- send: the character to send over SPI
  *    -- return: the character received over SPI */
 char spiSendReceive(char send);
+//uint8_t spiSendReceive(uint8_t send);
 
 float decodeData(int msb, char lsb); 
 
