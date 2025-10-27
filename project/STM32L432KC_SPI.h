@@ -36,6 +36,6 @@ void initSPI(int br, int cpol, int cpha);
 char spiSendReceive(char send);
 //uint8_t spiSendReceive(uint8_t send);
 
-float decodeData(int msb, char lsb); 
+
 
 #endif

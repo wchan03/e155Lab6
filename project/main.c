@@ -85,6 +85,10 @@ int _write(int file, char *ptr, int len) {
   return len;
 }
 
+unsigned char msb;
+unsigned char lsb;    
+uint8_t rs;// rs = resolution
+
 /////////////////////////////////////////////////////////////////
 // Solution Functions
 /////////////////////////////////////////////////////////////////
@@ -100,6 +104,11 @@ int main(void) {
   pinMode(PB3, GPIO_OUTPUT);
 
   USART_TypeDef* USART = initUSART(USART1_ID, 125000);
+
+  //timer
+  RCC->APB2ENR |= (RCC_APB2ENR_TIM15EN);
+  initTIM(TIM15);
+
 
   // TODO: Add SPI initialization code. change baud rate?
   // initialize SPI w/ 200kHz br
@@ -147,9 +156,9 @@ int main(void) {
     // SPI Temp Readings
     
     // data to write
-    unsigned char msb;
-    unsigned char lsb;    
-    uint8_t rs;// rs = resolution
+    //unsigned char msb;
+    //unsigned char lsb;    
+    //uint8_t rs;// rs = resolution
     int res = updateTempRes(request);
 
     // set resolution
@@ -170,7 +179,6 @@ int main(void) {
       rs = 0b11101110;
       break;
     default:
-      rs = 0b11101110;
       break;
     }
 
@@ -191,7 +199,8 @@ int main(void) {
     spiSendReceive(0x01);    // read the LSB register
     lsb = spiSendReceive(0x00);
     digitalWrite(CS, PIO_LOW);
-
+  
+    delay_millis(TIM15, 200);
     //printf("\nmsb: %d", msb);
     //printf("\nlsb: %d", lsb);
     
@@ -238,7 +247,7 @@ int main(void) {
     sendString(USART, "<h2>Temperature:</h2>");
     sendString(USART, "<p>");
     sendString(USART, temp);
-    sendString(USART, " degrees");
+    sendString(USART, " degrees Celcius");
     sendString(USART, "</p>");
 
     if (testing_perm) {    // checking intermediates
